@@ -1,0 +1,39 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwnerOfChild(childId) {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/children/$(childId)).data.parentId == request.auth.uid;
+    }
+
+    match /users/{userId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    match /children/{childId} {
+      allow read, update, delete: if isSignedIn() && resource.data.parentId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.parentId == request.auth.uid;
+    }
+
+    match /foodLogs/{logId} {
+      allow read: if isOwnerOfChild(resource.data.childId);
+      allow create: if isOwnerOfChild(request.resource.data.childId);
+      allow delete: if isOwnerOfChild(resource.data.childId);
+    }
+
+    match /mealPlans/{planId} {
+      // resource is null when the doc doesn't exist yet (brand-new child's first load).
+      allow get: if isSignedIn() && (resource == null || isOwnerOfChild(resource.data.childId));
+      // list needed for the query in deleteAllDocsForChild during account deletion.
+      allow list: if isOwnerOfChild(resource.data.childId);
+      allow create: if isOwnerOfChild(request.resource.data.childId);
+      allow update: if isOwnerOfChild(resource.data.childId) && isOwnerOfChild(request.resource.data.childId);
+      allow delete: if isOwnerOfChild(resource.data.childId);
+    }
+  }
+}
