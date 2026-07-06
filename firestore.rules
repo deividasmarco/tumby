@@ -6,9 +6,12 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isOwnerOfChild(childId) {
-      return isSignedIn() &&
-        get(/databases/$(database)/documents/children/$(childId)).data.parentId == request.auth.uid;
+    function ownsIncoming() {
+      return isSignedIn() && request.resource.data.parentId == request.auth.uid;
+    }
+
+    function ownsExisting() {
+      return isSignedIn() && resource.data.parentId == request.auth.uid;
     }
 
     match /users/{userId} {
@@ -20,20 +23,21 @@ service cloud.firestore {
       allow create: if isSignedIn() && request.resource.data.parentId == request.auth.uid;
     }
 
+    // foodLogs and mealPlans authorize via a direct parentId field check.
+    // No cross-document get() is used, so queries and batch deletes are not
+    // subject to Firestore's ~20 get()/exists() per-request limit.
     match /foodLogs/{logId} {
-      allow read: if isOwnerOfChild(resource.data.childId);
-      allow create: if isOwnerOfChild(request.resource.data.childId);
-      allow delete: if isOwnerOfChild(resource.data.childId);
+      allow read, delete: if ownsExisting();
+      allow create: if ownsIncoming();
     }
 
     match /mealPlans/{planId} {
       // resource is null when the doc doesn't exist yet (brand-new child's first load).
-      allow get: if isSignedIn() && (resource == null || isOwnerOfChild(resource.data.childId));
-      // list needed for the query in deleteAllDocsForChild during account deletion.
-      allow list: if isOwnerOfChild(resource.data.childId);
-      allow create: if isOwnerOfChild(request.resource.data.childId);
-      allow update: if isOwnerOfChild(resource.data.childId) && isOwnerOfChild(request.resource.data.childId);
-      allow delete: if isOwnerOfChild(resource.data.childId);
+      allow get: if isSignedIn() && (resource == null || ownsExisting());
+      allow list: if ownsExisting();
+      allow create: if ownsIncoming();
+      allow update: if ownsExisting() && ownsIncoming();
+      allow delete: if ownsExisting();
     }
   }
 }

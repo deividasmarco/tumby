@@ -1,13 +1,13 @@
-# Google Play Listing Copy — Yumly
+# Google Play Listing Copy — Tumby
 
 ## Short Description (80 chars max)
 Calm, research-based food coaching to help your picky eater try new foods.
 
 ## Full Description
 
-Yumly helps parents support picky eaters with small, low-pressure food exposures — based on common feeding research showing kids often need many tries before accepting a new food.
+Tumby helps parents support picky eaters with small, low-pressure food exposures — based on common feeding research showing kids often need many tries before accepting a new food.
 
-**What Yumly does:**
+**What Tumby does:**
 🍽️ Log how your child reacts to a food at each meal, from "refused" to "loved it"
 🐣 A friendly buddy character grows as your child's food journey progresses
 🗺️ Explore a food map organized by category and texture
@@ -15,7 +15,7 @@ Yumly helps parents support picky eaters with small, low-pressure food exposures
 ⚠️ Flag known allergies so suggestions steer clear of them
 🔥 Build streaks for steady, calm mealtime habits
 
-**Built for parents.** You create the account and log the meals — Yumly is a guidance and tracking tool, not a substitute for medical advice. Always check with your pediatrician about your child's nutrition, allergies, or feeding concerns, especially if your child has a medical condition or feeding disorder.
+**Built for parents.** You create the account and log the meals — Tumby is a guidance and tracking tool, not a substitute for medical advice. Always check with your pediatrician about your child's nutrition, allergies, or feeding concerns, especially if your child has a medical condition or feeding disorder.
 
 **Your privacy matters.** No ads. No analytics trackers. Your family's data is stored securely in your account and is never sold or shared with advertisers.
 
@@ -35,7 +35,7 @@ Target: **Everyone**
 ## Target audience & content settings
 **Recommended: Target audience = Adults (18+), do NOT enroll in "Designed for Families."**
 
-Why: Yumly's account holder and primary user is the parent — children don't sign up, log in, or interact with the account directly. The "Designed for Families" program adds substantial extra compliance requirements (stricter ad/SDK rules, additional content reviews, COPPA-aligned data handling even for incidental child data) that aren't necessary here since the app doesn't target children as users. Setting target audience to Adults keeps the compliance bar at the standard (non-Families) level, consistent with how the app actually operates. If you later want family-surface discovery (e.g. appearing in "Family" collections), you'd need to revisit this and meet the stricter Families Policy requirements.
+Why: Tumby's account holder and primary user is the parent — children don't sign up, log in, or interact with the account directly. The "Designed for Families" program adds substantial extra compliance requirements (stricter ad/SDK rules, additional content reviews, COPPA-aligned data handling even for incidental child data) that aren't necessary here since the app doesn't target children as users. Setting target audience to Adults keeps the compliance bar at the standard (non-Families) level, consistent with how the app actually operates. If you later want family-surface discovery (e.g. appearing in "Family" collections), you'd need to revisit this and meet the stricter Families Policy requirements.
 
 ## Privacy Policy URL
 [TODO: paste your hosted privacy-policy.md URL here — see legal/privacy-policy.md]

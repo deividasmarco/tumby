@@ -5,11 +5,11 @@ import { COLORS, RADIUS, SHADOW } from '../src/constants/colors';
 const SECTIONS = [
   {
     heading: null,
-    body: 'Yumly is a feeding-guidance app designed to help parents and caregivers introduce new foods to picky eaters. This policy explains what information Yumly collects, how it\'s used, and how you can control or delete it.\n\nYumly uses Google Firebase (Authentication and Cloud Firestore) as its only third-party infrastructure. There is no advertising network, no analytics SDK, and no data broker involved.',
+    body: 'Tumby is a feeding-guidance app designed to help parents and caregivers introduce new foods to picky eaters. This policy explains what information Tumby collects, how it\'s used, and how you can control or delete it.\n\nTumby uses Google Firebase (Authentication and Cloud Firestore) as its only third-party infrastructure. There is no advertising network, no analytics SDK, and no data broker involved.',
   },
   {
     heading: '1. Who this app is for',
-    body: 'Yumly is intended to be used by parents and caregivers, not directly by children. Account registration, food logging, and all settings are operated by an adult on behalf of their child.',
+    body: 'Tumby is intended to be used by parents and caregivers, not directly by children. Account registration, food logging, and all settings are operated by an adult on behalf of their child.',
   },
   {
     heading: '2. Information we collect',
@@ -21,7 +21,7 @@ const SECTIONS = [
   },
   {
     heading: '4. Third-party processors',
-    body: 'Yumly uses Google Firebase (Authentication and Cloud Firestore) purely as backend infrastructure. Firebase does not receive your data for its own advertising or analytics purposes under this configuration.\n\nWe do not use any other third-party SDK, analytics platform, or advertising network.',
+    body: 'Tumby uses Google Firebase (Authentication and Cloud Firestore) purely as backend infrastructure. Firebase does not receive your data for its own advertising or analytics purposes under this configuration.\n\nWe do not use any other third-party SDK, analytics platform, or advertising network.',
   },
   {
     heading: '5. We do not sell or share your data',
@@ -29,7 +29,7 @@ const SECTIONS = [
   },
   {
     heading: '6. Children\'s Privacy (COPPA)',
-    body: 'Yumly is designed for use by parents and caregivers, not by children. Account creation requires an email and password entered by an adult. The child does not interact with sign-up or account settings.\n\nChild profile information is provided voluntarily by the parent, solely to personalise in-app suggestions — it is not used to contact, market to, or identify the child outside the app.\n\nIf you believe a child has independently created an account without parental involvement, please contact us and we will delete it promptly.',
+    body: 'Tumby is designed for use by parents and caregivers, not by children. Account creation requires an email and password entered by an adult. The child does not interact with sign-up or account settings.\n\nChild profile information is provided voluntarily by the parent, solely to personalise in-app suggestions — it is not used to contact, market to, or identify the child outside the app.\n\nIf you believe a child has independently created an account without parental involvement, please contact us and we will delete it promptly.',
   },
   {
     heading: '7. Your rights',

@@ -7,7 +7,7 @@ export default function WelcomeScreen() {
     <SafeAreaView style={s.container}>
       <View style={s.content}>
         <Text style={s.logo}>🥦</Text>
-        <Text style={s.title}>Yumly</Text>
+        <Text style={s.title}>Tumby</Text>
         <Text style={s.tagline}>Helping picky eaters,{'\n'}one bite at a time 🌱</Text>
 
         <View style={{ flex: 1 }} />

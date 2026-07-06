@@ -18,8 +18,8 @@ function dateStrDaysAgo(days: number) {
   return d.toISOString().slice(0, 10);
 }
 
-function emptyMealPlan(childId: string, date: string): MealPlan {
-  return { id: `${childId}_${date}`, childId, date, breakfast: [], midMorningSnack: [], lunch: [], afternoonSnack: [], dinner: [] };
+function emptyMealPlan(parentId: string, childId: string, date: string): MealPlan {
+  return { id: `${childId}_${date}`, parentId, childId, date, breakfast: [], midMorningSnack: [], lunch: [], afternoonSnack: [], dinner: [] };
 }
 
 interface LogResult {
@@ -55,6 +55,7 @@ export const useChildStore = create<ChildState>((set, get) => ({
   loadChild: async (childId) => {
     set({ loading: true });
     const child = await getChildDoc(childId);
+    const parentId = child?.parentId ?? '';
 
     const date = todayDateStr();
     const planRef = doc(db, 'mealPlans', `${childId}_${date}`);
@@ -63,7 +64,7 @@ export const useChildStore = create<ChildState>((set, get) => ({
     if (planSnap.exists()) {
       mealPlan = planSnap.data() as MealPlan;
     } else {
-      mealPlan = emptyMealPlan(childId, date);
+      mealPlan = emptyMealPlan(parentId, childId, date);
       await setDoc(planRef, mealPlan);
     }
 
@@ -135,7 +136,7 @@ export const useChildStore = create<ChildState>((set, get) => ({
     const leveledUp = stageForXP(oldXP).index < stageForXP(newXP).index;
 
     await addDoc(collection(db, 'foodLogs'), {
-      childId: child.id, foodId, meal, reaction, date: today, createdAt: Date.now(),
+      parentId: child.parentId, childId: child.id, foodId, meal, reaction, date: today, createdAt: Date.now(),
     });
 
     if (!mealPlan[meal].includes(foodId)) {
@@ -159,7 +160,7 @@ export const useChildStore = create<ChildState>((set, get) => ({
       buddyXP: newXP, streak: newStreak, lastLogDate: today, lovedFoodIds, metFoodIds, bestReactionByFood,
     });
 
-    const newLog: FoodLog = { id: `local-${Date.now()}`, childId: child.id, foodId, meal, reaction, date: today, createdAt: Date.now() };
+    const newLog: FoodLog = { id: `local-${Date.now()}`, parentId: child.parentId, childId: child.id, foodId, meal, reaction, date: today, createdAt: Date.now() };
     set({
       child: { ...child, buddyXP: newXP, streak: newStreak, lastLogDate: today, lovedFoodIds, metFoodIds, bestReactionByFood },
       todayLogs: [...todayLogs, newLog],

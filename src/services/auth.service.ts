@@ -5,8 +5,6 @@ import {
   sendPasswordResetEmail,
   onAuthStateChanged,
   deleteUser,
-  reauthenticateWithCredential,
-  EmailAuthProvider,
   User,
 } from '@firebase/auth';
 import {
@@ -99,13 +97,6 @@ export async function deleteChildDoc(childId: string): Promise<void> {
 
 export async function deleteUserDoc(uid: string): Promise<void> {
   await deleteDoc(doc(db, 'users', uid));
-}
-
-export async function reauthenticateCurrentUser(password: string): Promise<void> {
-  const user = auth.currentUser;
-  if (!user || !user.email) throw new Error('No signed-in user to re-authenticate.');
-  const credential = EmailAuthProvider.credential(user.email, password);
-  await reauthenticateWithCredential(user, credential);
 }
 
 export async function deleteCurrentAuthUser(): Promise<void> {

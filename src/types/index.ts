@@ -56,6 +56,7 @@ export interface ChildDoc {
 
 export interface FoodLog {
   id: string;
+  parentId: string;
   childId: string;
   foodId: string;
   meal: MealType;
@@ -66,6 +67,7 @@ export interface FoodLog {
 
 export interface MealPlan {
   id: string;
+  parentId: string;
   childId: string;
   date: string;
   breakfast: string[];

@@ -1,10 +1,10 @@
 # App Privacy Questionnaire Answers
 
-This documents exactly what Yumly collects and how, based on the actual codebase (audited [TODO: insert date], commit/version 1.0.0). **Use this as the source of truth for both Apple's App Privacy questionnaire and Google Play's Data Safety form.** If you add any new SDK or network call later, update this file before your next submission.
+This documents exactly what Tumby collects and how, based on the actual codebase (audited [TODO: insert date], commit/version 1.0.0). **Use this as the source of truth for both Apple's App Privacy questionnaire and Google Play's Data Safety form.** If you add any new SDK or network call later, update this file before your next submission.
 
 ## Summary of network/backend usage
 
-Yumly uses **Google Firebase** as its only backend:
+Tumby uses **Google Firebase** as its only backend:
 - **Firebase Authentication** — email/password sign-in
 - **Cloud Firestore** — stores account, child profile, food log, and meal plan data
 
@@ -16,7 +16,7 @@ A small amount of data (the cached auth session) is stored locally on-device via
 
 ## Apple App Privacy (App Store Connect) — "Data Used to Track You"
 
-**Answer: No.** Yumly does not track users across apps/websites owned by other companies. No advertising identifiers are collected.
+**Answer: No.** Tumby does not track users across apps/websites owned by other companies. No advertising identifiers are collected.
 
 ## Apple App Privacy — "Data Linked to You"
 
@@ -30,7 +30,7 @@ A small amount of data (the cached auth session) is stored locally on-device via
 
 **Not collected:** Precise/coarse location, Photos/Camera, Contacts, Browsing History, Search History, Financial Info, Health & Fitness data (note: food reaction logs are behavioral/preference data, not biometric or clinical health data — see note below), Identifiers used for advertising, Usage Data for analytics, Diagnostics/crash data.
 
-> **Note on "Health" classification:** Apple's Health & Fitness category is meant for data like steps, heart rate, or clinical health records. Yumly's food-reaction logs (e.g. "child licked broccoli") are user-entered preference/behavior data, not health data — classify under **Other Data / User Content**, not Health & Fitness, unless Apple's reviewer guidance says otherwise for your specific submission.
+> **Note on "Health" classification:** Apple's Health & Fitness category is meant for data like steps, heart rate, or clinical health records. Tumby's food-reaction logs (e.g. "child licked broccoli") are user-entered preference/behavior data, not health data — classify under **Other Data / User Content**, not Health & Fitness, unless Apple's reviewer guidance says otherwise for your specific submission.
 
 ## Apple App Privacy — "Data Not Linked to You"
 None.
@@ -62,7 +62,7 @@ None.
 
 ## COPPA / "Designed for Families" note
 
-Yumly is **not** designed for or directed at children — it's a parent-facing tool. Recommended target audience: **Adults**, not the Play Families program, and Apple age rating around **4+** with no objectionable content (the app itself has no content restrictions; the 4+ rating reflects general audience suitability, not that children operate the app independently).
+Tumby is **not** designed for or directed at children — it's a parent-facing tool. Recommended target audience: **Adults**, not the Play Families program, and Apple age rating around **4+** with no objectionable content (the app itself has no content restrictions; the 4+ rating reflects general audience suitability, not that children operate the app independently).
 
 See `store/submission-checklist.md` for the full reasoning on target-audience/category choices.
 

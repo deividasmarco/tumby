@@ -54,7 +54,7 @@ const TIP_SETS = [
       { num: 'Step 4 — Wait it out', title: 'Food "jags" typically resolve in 2–4 weeks naturally.', sub: 'Forcing variety makes the jag last longer. Staying calm speeds it up.' },
     ],
     donts: ['Removing the safe food to force variety', '"You\'ve had pasta every day this week!"', 'Making mealtimes a battle over variety'],
-    dos: ['"Here\'s your pasta AND something new — no pressure"', 'Introduce a tiny variation each time', 'Log it in Yumly — even touching the new food is a win'],
+    dos: ['"Here\'s your pasta AND something new — no pressure"', 'Introduce a tiny variation each time', 'Log it in Tumby — even touching the new food is a win'],
   },
   {
     title: '🆕 First Time on the Plate',

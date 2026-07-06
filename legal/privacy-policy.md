@@ -1,16 +1,16 @@
-# Yumly Privacy Policy
+# Tumby Privacy Policy
 
 **Last updated:** [TODO: insert publish date]
 
-Yumly ("we", "our", "the app") is a feeding-guidance app designed to help parents and caregivers introduce new foods to picky eaters. This policy explains what information Yumly collects, how it's used, and how you can control or delete it.
+Tumby ("we", "our", "the app") is a feeding-guidance app designed to help parents and caregivers introduce new foods to picky eaters. This policy explains what information Tumby collects, how it's used, and how you can control or delete it.
 
-Yumly is built and operated by an individual developer. There is no advertising network, no analytics SDK, and no data broker involved — the only third-party infrastructure Yumly uses is Google Firebase (Authentication and Cloud Firestore), described below.
+Tumby is built and operated by an individual developer. There is no advertising network, no analytics SDK, and no data broker involved — the only third-party infrastructure Tumby uses is Google Firebase (Authentication and Cloud Firestore), described below.
 
 ---
 
 ## 1. Who this app is for
 
-Yumly is intended to be used **by parents and caregivers**, not directly by children. Account registration, food logging, and all settings are operated by an adult on behalf of their child.
+Tumby is intended to be used **by parents and caregivers**, not directly by children. Account registration, food logging, and all settings are operated by an adult on behalf of their child.
 
 ## 2. Information we collect
 
@@ -39,12 +39,12 @@ We recommend using a nickname rather than a child's full legal name, though this
 
 ## 3. How your data is stored
 
-- Your account and all app data (child profile, food logs, meal plans, buddy progress) are stored in **Google Cloud Firestore**, the cloud database behind Google Firebase, which Yumly uses as its backend.
+- Your account and all app data (child profile, food logs, meal plans, buddy progress) are stored in **Google Cloud Firestore**, the cloud database behind Google Firebase, which Tumby uses as its backend.
 - Your device also keeps a small local cache (via AsyncStorage) of your sign-in session, so you don't have to log in every time you open the app. This local cache does not contain your child's food history — that lives in your account in the cloud so it isn't lost if you reinstall the app or switch devices.
 
 ## 4. Third-party processors
 
-Yumly uses **Google Firebase** (Authentication and Cloud Firestore) purely as backend infrastructure to operate the app. Firebase does not receive your data for its own advertising or analytics purposes under this configuration. Google's privacy policy covers how Firebase infrastructure handles data on our behalf: https://policies.google.com/privacy
+Tumby uses **Google Firebase** (Authentication and Cloud Firestore) purely as backend infrastructure to operate the app. Firebase does not receive your data for its own advertising or analytics purposes under this configuration. Google's privacy policy covers how Firebase infrastructure handles data on our behalf: https://policies.google.com/privacy
 
 We do not use any other third-party SDK, analytics platform, or advertising network.
 
@@ -54,7 +54,7 @@ We do not sell your data, or your child's data, to anyone. We do not share it wi
 
 ## 6. Children's Privacy (COPPA)
 
-Yumly is designed for use **by parents and caregivers**, not by children. We do not knowingly collect personal information directly from children:
+Tumby is designed for use **by parents and caregivers**, not by children. We do not knowingly collect personal information directly from children:
 
 - Account creation requires an email and password, entered by an adult.
 - The child does not interact with sign-up, sign-in, or account settings.
@@ -87,4 +87,4 @@ Questions about this policy or your data? Contact: **[TODO: support email]**
 
 ---
 
-*This policy describes Yumly's actual data practices as of the date above. If you (the developer) add any new SDK, analytics tool, or third-party service in the future, this document must be updated before the next app store submission.*
+*This policy describes Tumby's actual data practices as of the date above. If you (the developer) add any new SDK, analytics tool, or third-party service in the future, this document must be updated before the next app store submission.*

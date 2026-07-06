@@ -1,5 +1,5 @@
 // Monetization is NOT active at launch.
-// Yumly launches free to build users, reviews, and retention data.
+// Tumby launches free to build users, reviews, and retention data.
 // Activate PREMIUM_ENABLED = true when ready for RevenueCat integration.
 
 export const PREMIUM_ENABLED = false;

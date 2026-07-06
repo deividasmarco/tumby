@@ -1,7 +1,7 @@
-# App Store Listing Copy — Yumly
+# App Store Listing Copy — Tumby
 
 ## App Name
-Yumly: Picky Eater Coach
+Tumby: Picky Eater Coach
 
 ## Subtitle (30 chars max)
 Calm food coaching for kids
@@ -11,7 +11,7 @@ New: track allergies, log every reaction, and watch your child's buddy grow with
 
 ## Description
 
-Yumly helps parents support picky eaters with small, low-pressure food exposures — based on common feeding research that shows kids often need many tries before accepting a new food.
+Tumby helps parents support picky eaters with small, low-pressure food exposures — based on common feeding research that shows kids often need many tries before accepting a new food.
 
 **How it helps:**
 - Log how your child reacts to a food at each meal — from "refused" to "loved it" — and watch progress build over time
@@ -21,7 +21,7 @@ Yumly helps parents support picky eaters with small, low-pressure food exposures
 - Flag known allergies so suggestions steer clear of them
 - Track streaks to build a steady, calm mealtime habit
 
-**Built for parents, not kids.** You create the account, you log the meals, you stay in control. Yumly is a guidance and tracking tool — it offers general, research-based suggestions and is not a substitute for medical advice. Always check with your pediatrician about your child's nutrition, allergies, or feeding concerns.
+**Built for parents, not kids.** You create the account, you log the meals, you stay in control. Tumby is a guidance and tracking tool — it offers general, research-based suggestions and is not a substitute for medical advice. Always check with your pediatrician about your child's nutrition, allergies, or feeding concerns.
 
 No ads. No analytics trackers. Your family's data stays in your account, never sold, never shared with advertisers.
 
@@ -32,7 +32,7 @@ picky eater,toddler food,feeding,kids nutrition,baby led weaning,food chart,alle
 **Primary:** Education
 **Secondary (if allowed):** Food & Drink
 
-> Why Education over Health & Fitness: Yumly's core loop is informational/behavioral (tracking exposures, recipes, gentle habit-building) rather than clinical health tracking. Health & Fitness apps get extra App Review scrutiny around health claims and may require additional disclosures. Education better matches what the app actually does and reduces the chance of a reviewer flagging it under stricter health-app rules. Trade-off: Education is a more crowded category for discovery, but it's the lower-risk choice for first submission.
+> Why Education over Health & Fitness: Tumby's core loop is informational/behavioral (tracking exposures, recipes, gentle habit-building) rather than clinical health tracking. Health & Fitness apps get extra App Review scrutiny around health claims and may require additional disclosures. Education better matches what the app actually does and reduces the chance of a reviewer flagging it under stricter health-app rules. Trade-off: Education is a more crowded category for discovery, but it's the lower-risk choice for first submission.
 
 ## Age Rating questionnaire (likely outcome: 4+)
 - No unrestricted web access

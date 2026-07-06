@@ -5,15 +5,15 @@ import { COLORS, RADIUS, SHADOW } from '../src/constants/colors';
 const SECTIONS = [
   {
     heading: null,
-    body: 'These Terms of Use govern your use of the Yumly mobile app. By creating an account or using Yumly, you agree to these Terms.',
+    body: 'These Terms of Use govern your use of the Tumby mobile app. By creating an account or using Tumby, you agree to these Terms.',
   },
   {
-    heading: '1. Who can use Yumly',
-    body: 'Yumly is intended for use by parents and caregivers on behalf of their children. You must be an adult capable of forming a binding contract to create an account.',
+    heading: '1. Who can use Tumby',
+    body: 'Tumby is intended for use by parents and caregivers on behalf of their children. You must be an adult capable of forming a binding contract to create an account.',
   },
   {
     heading: '2. Not medical advice',
-    body: 'Yumly provides general, educational guidance about introducing foods to picky eaters, based on common feeding research. It is not medical advice, and it does not diagnose, treat, or cure any medical condition, allergy, or feeding disorder.\n\nAlways consult your pediatrician, allergist, or a qualified feeding specialist about your child\'s nutrition, allergies, or feeding concerns — especially if your child has a known medical condition, allergy, or feeding disorder.\n\nAllergy flags you set in the app are a convenience filter; they are not a medical record and do not replace professional medical guidance.',
+    body: 'Tumby provides general, educational guidance about introducing foods to picky eaters, based on common feeding research. It is not medical advice, and it does not diagnose, treat, or cure any medical condition, allergy, or feeding disorder.\n\nAlways consult your pediatrician, allergist, or a qualified feeding specialist about your child\'s nutrition, allergies, or feeding concerns — especially if your child has a known medical condition, allergy, or feeding disorder.\n\nAllergy flags you set in the app are a convenience filter; they are not a medical record and do not replace professional medical guidance.',
   },
   {
     heading: '3. Your account',
@@ -25,11 +25,11 @@ const SECTIONS = [
   },
   {
     heading: '5. Acceptable use',
-    body: 'You agree not to:\n• Use Yumly for any purpose other than personal, non-commercial feeding guidance for your own family\n• Attempt to interfere with, disrupt, or gain unauthorized access to the app or its backend services\n• Use the app to collect or store data about a child other than your own without that child\'s parent\'s consent',
+    body: 'You agree not to:\n• Use Tumby for any purpose other than personal, non-commercial feeding guidance for your own family\n• Attempt to interfere with, disrupt, or gain unauthorized access to the app or its backend services\n• Use the app to collect or store data about a child other than your own without that child\'s parent\'s consent',
   },
   {
     heading: '6. No warranty',
-    body: 'Yumly is provided "as is," without warranties of any kind, express or implied. We do not guarantee that the app will be uninterrupted, error-free, or that following its suggestions will produce any particular feeding outcome.',
+    body: 'Tumby is provided "as is," without warranties of any kind, express or implied. We do not guarantee that the app will be uninterrupted, error-free, or that following its suggestions will produce any particular feeding outcome.',
   },
   {
     heading: '7. Limitation of liability',
@@ -37,11 +37,11 @@ const SECTIONS = [
   },
   {
     heading: '8. Changes',
-    body: 'We may update Yumly or these Terms from time to time. Material changes will be reflected in the in-app Terms screen.',
+    body: 'We may update Tumby or these Terms from time to time. Material changes will be reflected in the in-app Terms screen.',
   },
   {
     heading: '9. Termination',
-    body: 'You may stop using Yumly and delete your account at any time from Settings → Delete Account & All Data. We may suspend or terminate accounts that violate these Terms.',
+    body: 'You may stop using Tumby and delete your account at any time from Settings → Delete Account & All Data. We may suspend or terminate accounts that violate these Terms.',
   },
   {
     heading: '10. Contact',

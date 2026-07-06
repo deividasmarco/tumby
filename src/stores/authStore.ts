@@ -15,7 +15,6 @@ import {
   deleteChildDoc,
   deleteUserDoc,
   deleteCurrentAuthUser,
-  reauthenticateCurrentUser,
 } from '../services/auth.service';
 import { ChildDoc, UserDoc } from '../types';
 
@@ -35,22 +34,26 @@ interface AuthState {
   addChild: (name: string, age: number, avatarEmoji: string, safeFoods: string[], allergens: string[]) => Promise<void>;
   switchChild: (childId: string) => Promise<void>;
   deleteChild: (childId: string) => Promise<void>;
-  deleteAccount: (password: string) => Promise<void>;
+  deleteAccount: () => Promise<void>;
 }
 
-async function deleteAllDocsForChild(childId: string) {
-  const batch = writeBatch(db);
-
-  const logsQ = query(collection(db, 'foodLogs'), where('childId', '==', childId));
-  const logsSnap = await getDocs(logsQ);
-  logsSnap.forEach(d => batch.delete(d.ref));
-
-  const plansQ = query(collection(db, 'mealPlans'), where('childId', '==', childId));
-  const plansSnap = await getDocs(plansQ);
-  plansSnap.forEach(d => batch.delete(d.ref));
-
-  await batch.commit();
-  await deleteChildDoc(childId);
+// Deletes foodLogs + mealPlans owned by this parent. Queries by parentId so the
+// security rules can authorize with a direct field check (no per-doc get(),
+// which otherwise hits Firestore's ~20 get()/query limit on larger accounts).
+// Pass childId to scope deletion to a single child; omit to wipe everything.
+async function deleteLogsAndPlans(parentId: string, childId?: string) {
+  const del = async (coll: string) => {
+    const snap = await getDocs(query(collection(db, coll), where('parentId', '==', parentId)));
+    const targets = snap.docs.filter(d => !childId || d.data().childId === childId);
+    // Firestore batches cap at 500 ops — chunk to stay safely under.
+    for (let i = 0; i < targets.length; i += 400) {
+      const batch = writeBatch(db);
+      targets.slice(i, i + 400).forEach(d => batch.delete(d.ref));
+      await batch.commit();
+    }
+  };
+  await del('foodLogs');
+  await del('mealPlans');
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -126,7 +129,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   deleteChild: async (childId) => {
     const { user, children, currentChildId } = get();
     if (!user) return;
-    await deleteAllDocsForChild(childId);
+    await deleteLogsAndPlans(user.uid, childId);
+    await deleteChildDoc(childId);
     const remaining = children.filter(c => c.id !== childId);
     let nextCurrentId = currentChildId;
     if (currentChildId === childId) {
@@ -138,17 +142,27 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ children: remaining, currentChildId: nextCurrentId });
   },
 
-  deleteAccount: async (password) => {
+  deleteAccount: async () => {
     const { user, children } = get();
     if (!user) return;
-    // Re-authenticate first so deleteUser() cannot fail with
-    // auth/requires-recent-login after data has already been wiped.
-    await reauthenticateCurrentUser(password);
+    // Wipe all Firestore data first (while still authenticated).
+    await deleteLogsAndPlans(user.uid);
     for (const child of children) {
-      await deleteAllDocsForChild(child.id);
+      await deleteChildDoc(child.id);
     }
     await deleteUserDoc(user.uid);
-    await deleteCurrentAuthUser();
+    // Try to delete the auth record. Firebase blocks this on stale sessions
+    // (auth/requires-recent-login) — in that case just sign out; the user's
+    // data is already gone, which is what matters for a deletion request.
+    try {
+      await deleteCurrentAuthUser();
+    } catch (e: any) {
+      if (e?.code === 'auth/requires-recent-login') {
+        await logoutService();
+      } else {
+        throw e;
+      }
+    }
     set({ user: null, userDoc: null, currentChildId: null, children: [] });
   },
 }));

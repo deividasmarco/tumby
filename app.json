@@ -1,20 +1,20 @@
 {
   "expo": {
-    "name": "Yumly",
-    "slug": "yumly",
+    "name": "Tumby",
+    "slug": "tumby",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "scheme": "yumly",
+    "scheme": "tumby",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.yumlyapp.yumly",
+      "bundleIdentifier": "com.tumbyapp.tumby",
       "buildNumber": "1"
     },
     "android": {
-      "package": "com.yumlyapp.yumly",
+      "package": "com.tumbyapp.tumby",
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
@@ -29,8 +29,8 @@
       "typedRoutes": true
     },
     "extra": {
-      "privacyPolicyUrl": "https://TODO-your-domain.com/yumly/privacy-policy",
-      "termsUrl": "https://TODO-your-domain.com/yumly/terms"
+      "privacyPolicyUrl": "https://TODO-your-domain.com/tumby/privacy-policy",
+      "termsUrl": "https://TODO-your-domain.com/tumby/terms"
     }
   }
 }
