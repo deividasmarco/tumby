@@ -15,7 +15,9 @@ import {
   deleteChildDoc,
   deleteUserDoc,
   deleteCurrentAuthUser,
+  reauthenticateCurrentUser,
 } from '../services/auth.service';
+import { QueryDocumentSnapshot } from 'firebase/firestore';
 import { ChildDoc, UserDoc } from '../types';
 
 interface AuthState {
@@ -34,26 +36,25 @@ interface AuthState {
   addChild: (name: string, age: number, avatarEmoji: string, safeFoods: string[], allergens: string[]) => Promise<void>;
   switchChild: (childId: string) => Promise<void>;
   deleteChild: (childId: string) => Promise<void>;
-  deleteAccount: () => Promise<void>;
+  deleteAccount: (password: string) => Promise<void>;
 }
 
-// Deletes foodLogs + mealPlans owned by this parent. Queries by parentId so the
-// security rules can authorize with a direct field check (no per-doc get(),
-// which otherwise hits Firestore's ~20 get()/query limit on larger accounts).
-// Pass childId to scope deletion to a single child; omit to wipe everything.
-async function deleteLogsAndPlans(parentId: string, childId?: string) {
-  const del = async (coll: string) => {
-    const snap = await getDocs(query(collection(db, coll), where('parentId', '==', parentId)));
-    const targets = snap.docs.filter(d => !childId || d.data().childId === childId);
-    // Firestore batches cap at 500 ops — chunk to stay safely under.
-    for (let i = 0; i < targets.length; i += 400) {
-      const batch = writeBatch(db);
-      targets.slice(i, i + 400).forEach(d => batch.delete(d.ref));
-      await batch.commit();
-    }
-  };
-  await del('foodLogs');
-  await del('mealPlans');
+async function deleteDocsInChunks(docs: QueryDocumentSnapshot[]) {
+  // Firestore batches cap at 500 ops — chunk to stay safely under.
+  for (let i = 0; i < docs.length; i += 400) {
+    const batch = writeBatch(db);
+    docs.slice(i, i + 400).forEach(d => batch.delete(d.ref));
+    await batch.commit();
+  }
+}
+
+// Deletes every doc in `coll` belonging to a single child (queried by childId).
+// Returns the number deleted. Throws with the collection/childId in the message
+// so callers can log exactly where a failure happened.
+async function deleteCollectionForChild(coll: 'foodLogs' | 'mealPlans', childId: string): Promise<number> {
+  const snap = await getDocs(query(collection(db, coll), where('childId', '==', childId)));
+  await deleteDocsInChunks(snap.docs);
+  return snap.size;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -129,7 +130,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   deleteChild: async (childId) => {
     const { user, children, currentChildId } = get();
     if (!user) return;
-    await deleteLogsAndPlans(user.uid, childId);
+    // Order matters: delete a child's sub-data BEFORE the child doc, because the
+    // security rules authorize sub-data by the child's ownership.
+    await deleteCollectionForChild('foodLogs', childId);
+    await deleteCollectionForChild('mealPlans', childId);
     await deleteChildDoc(childId);
     const remaining = children.filter(c => c.id !== childId);
     let nextCurrentId = currentChildId;
@@ -142,27 +146,59 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ children: remaining, currentChildId: nextCurrentId });
   },
 
-  deleteAccount: async () => {
+  deleteAccount: async (password) => {
     const { user, children } = get();
     if (!user) return;
-    // Wipe all Firestore data first (while still authenticated).
-    await deleteLogsAndPlans(user.uid);
-    for (const child of children) {
-      await deleteChildDoc(child.id);
-    }
-    await deleteUserDoc(user.uid);
-    // Try to delete the auth record. Firebase blocks this on stale sessions
-    // (auth/requires-recent-login) — in that case just sign out; the user's
-    // data is already gone, which is what matters for a deletion request.
-    try {
-      await deleteCurrentAuthUser();
-    } catch (e: any) {
-      if (e?.code === 'auth/requires-recent-login') {
-        await logoutService();
-      } else {
-        throw e;
+    const uid = user.uid;
+
+    // Wrap every step so we log exactly which operation fails and its error code.
+    const run = async <T,>(step: string, fn: () => Promise<T>): Promise<T> => {
+      try {
+        console.log(`[deleteAccount] → ${step}`);
+        const result = await fn();
+        console.log(`[deleteAccount] ✓ ${step}`);
+        return result;
+      } catch (e: any) {
+        console.error(`[deleteAccount] ✗ FAILED at "${step}" — code=${e?.code ?? 'n/a'} message=${e?.message ?? e}`);
+        const wrapped = new Error(`Failed at: ${step}${e?.code ? ` (${e.code})` : ''}`);
+        (wrapped as any).step = step;
+        (wrapped as any).code = e?.code;
+        throw wrapped;
       }
+    };
+
+    // 0. Re-authenticate first so the final deleteUser() can't fail with
+    //    auth/requires-recent-login after data is already gone.
+    await run('reauthenticate', () => reauthenticateCurrentUser(password));
+
+    // 1. Each child's foodLogs (child docs must still exist here).
+    for (const child of children) {
+      await run(`delete foodLogs for child ${child.id}`, async () => {
+        const n = await deleteCollectionForChild('foodLogs', child.id);
+        console.log(`[deleteAccount]   removed ${n} foodLogs`);
+      });
     }
+
+    // 2. Each child's mealPlans.
+    for (const child of children) {
+      await run(`delete mealPlans for child ${child.id}`, async () => {
+        const n = await deleteCollectionForChild('mealPlans', child.id);
+        console.log(`[deleteAccount]   removed ${n} mealPlans`);
+      });
+    }
+
+    // 3. Child docs.
+    for (const child of children) {
+      await run(`delete child doc ${child.id}`, () => deleteChildDoc(child.id));
+    }
+
+    // 4. User doc.
+    await run('delete user doc', () => deleteUserDoc(uid));
+
+    // 5. Auth account LAST — once this is gone we lose all Firestore permission.
+    await run('delete auth user', () => deleteCurrentAuthUser());
+
     set({ user: null, userDoc: null, currentChildId: null, children: [] });
+    console.log('[deleteAccount] ✓✓ complete — account and all data removed');
   },
 }));

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, SafeAreaView, Alert, Linking, Switch } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, SafeAreaView, Alert, Linking, Switch, Modal, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -30,6 +30,9 @@ export default function SettingsScreen() {
   const [safeFoods, setSafeFoods] = useState<string[]>([]);
   const [newChildAllergens, setNewChildAllergens] = useState<string[]>([]);
   const [remindersEnabled, setRemindersEnabled] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem('tumby_reminders').then(v => { if (v === 'true') setRemindersEnabled(true); });
@@ -99,30 +102,30 @@ export default function SettingsScreen() {
     );
   };
 
-  const handleDeleteAccount = () => {
-    Alert.alert(
-      'Delete account & all data?',
-      'This permanently deletes your account, every child profile, and all food logs and meal plans. This cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete Everything',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteAccount();
-              router.replace('/(auth)/welcome');
-            } catch (e: any) {
-              Alert.alert(
-                'Could not delete account',
-                e?.message ?? 'Please try again. If this keeps failing, log out and back in first.',
-                [{ text: 'OK' }]
-              );
-            }
-          },
-        },
-      ]
-    );
+  const handleDeleteAccount = () => setDeleteModalOpen(true);
+
+  const confirmDeleteAccount = async () => {
+    if (!deletePassword) return;
+    setDeleting(true);
+    try {
+      await deleteAccount(deletePassword);
+      setDeleteModalOpen(false);
+      setDeletePassword('');
+      router.replace('/(auth)/welcome');
+    } catch (e: any) {
+      const code = e?.code ?? '';
+      let msg = e?.message ?? 'Please try again.';
+      if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
+        msg = 'That password is incorrect. Please try again.';
+      } else if (code === 'auth/too-many-requests') {
+        msg = 'Too many attempts. Please wait a moment and try again.';
+      } else if (code === 'permission-denied') {
+        msg = `Permission error while deleting your data (${e?.step ?? 'unknown step'}). Your Firestore rules may need republishing. Details logged to console.`;
+      }
+      Alert.alert('Could not delete account', msg, [{ text: 'OK' }]);
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const handleLogout = () => {
@@ -314,6 +317,49 @@ export default function SettingsScreen() {
           <Text style={s.deleteAccountBtnText}>Delete Account & All Data</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Delete account confirmation modal (password required to re-authenticate) */}
+      <Modal
+        visible={deleteModalOpen}
+        animationType="fade"
+        transparent
+        onRequestClose={() => { if (!deleting) { setDeleteModalOpen(false); setDeletePassword(''); } }}
+      >
+        <View style={s.modalOverlay}>
+          <View style={s.deleteModal}>
+            <Text style={s.deleteModalTitle}>Delete account & all data?</Text>
+            <Text style={s.deleteModalBody}>
+              This permanently deletes your account, every child profile, and all food logs and meal plans. This cannot be undone.
+            </Text>
+            <Text style={s.deleteModalLabel}>Enter your password to confirm</Text>
+            <TextInput
+              style={s.deleteModalInput}
+              placeholder="Your password"
+              placeholderTextColor={COLORS.text3}
+              value={deletePassword}
+              onChangeText={setDeletePassword}
+              secureTextEntry
+              autoCapitalize="none"
+            />
+            <TouchableOpacity
+              style={[s.deleteModalConfirm, (!deletePassword || deleting) && { opacity: 0.5 }]}
+              onPress={confirmDeleteAccount}
+              disabled={!deletePassword || deleting}
+            >
+              {deleting
+                ? <ActivityIndicator color={COLORS.white} />
+                : <Text style={s.deleteModalConfirmText}>Delete Everything</Text>}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={s.deleteModalCancel}
+              onPress={() => { setDeleteModalOpen(false); setDeletePassword(''); }}
+              disabled={deleting}
+            >
+              <Text style={s.deleteModalCancelText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -368,4 +414,14 @@ const s = StyleSheet.create({
   logoutBtnText: { fontSize: 14, fontWeight: '800', color: COLORS.text2 },
   deleteAccountBtn: { backgroundColor: COLORS.redPale, borderRadius: RADIUS.lg, padding: 16, alignItems: 'center' },
   deleteAccountBtnText: { fontSize: 14, fontWeight: '800', color: COLORS.red },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 28 },
+  deleteModal: { backgroundColor: COLORS.white, borderRadius: RADIUS.xl, padding: 22 },
+  deleteModalTitle: { fontSize: 18, fontWeight: '900', color: COLORS.text, marginBottom: 8 },
+  deleteModalBody: { fontSize: 13, fontWeight: '600', color: COLORS.text2, lineHeight: 19, marginBottom: 16 },
+  deleteModalLabel: { fontSize: 11, fontWeight: '800', color: COLORS.text3, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 8 },
+  deleteModalInput: { backgroundColor: COLORS.cream, borderWidth: 2, borderColor: COLORS.border, borderRadius: RADIUS.md, padding: 14, fontSize: 15, fontWeight: '700', color: COLORS.text, marginBottom: 16 },
+  deleteModalConfirm: { backgroundColor: COLORS.red, borderRadius: RADIUS.lg, padding: 15, alignItems: 'center' },
+  deleteModalConfirmText: { fontSize: 15, fontWeight: '800', color: COLORS.white },
+  deleteModalCancel: { alignItems: 'center', padding: 12, marginTop: 4 },
+  deleteModalCancelText: { fontSize: 14, fontWeight: '700', color: COLORS.text3 },
 });
