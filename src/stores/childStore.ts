@@ -56,25 +56,41 @@ export const useChildStore = create<ChildState>((set, get) => ({
     set({ loading: true });
     const child = await getChildDoc(childId);
     const parentId = child?.parentId ?? '';
-
     const date = todayDateStr();
-    const planRef = doc(db, 'mealPlans', `${childId}_${date}`);
-    const planSnap = await getDoc(planRef);
-    let mealPlan: MealPlan;
-    if (planSnap.exists()) {
-      mealPlan = planSnap.data() as MealPlan;
-    } else {
-      mealPlan = emptyMealPlan(parentId, childId, date);
-      await setDoc(planRef, mealPlan);
+
+    // Each read is isolated so a single permission/network failure (e.g. legacy
+    // data that predates the parentId field) degrades gracefully instead of
+    // crashing app startup.
+    let mealPlan: MealPlan = emptyMealPlan(parentId, childId, date);
+    try {
+      const planRef = doc(db, 'mealPlans', `${childId}_${date}`);
+      const planSnap = await getDoc(planRef);
+      if (planSnap.exists()) {
+        mealPlan = planSnap.data() as MealPlan;
+      } else {
+        await setDoc(planRef, mealPlan);
+      }
+    } catch (e) {
+      console.warn('[loadChild] mealPlan read failed, using empty plan:', e);
     }
 
-    const todayQ = query(collection(db, 'foodLogs'), where('childId', '==', childId), where('date', '==', date));
-    const todaySnap = await getDocs(todayQ);
-    const todayLogs: FoodLog[] = todaySnap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<FoodLog, 'id'>) }));
+    let todayLogs: FoodLog[] = [];
+    try {
+      const todayQ = query(collection(db, 'foodLogs'), where('childId', '==', childId), where('date', '==', date));
+      const todaySnap = await getDocs(todayQ);
+      todayLogs = todaySnap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<FoodLog, 'id'>) }));
+    } catch (e) {
+      console.warn('[loadChild] today foodLogs read failed:', e);
+    }
 
-    const recentQ = query(collection(db, 'foodLogs'), where('childId', '==', childId), orderBy('createdAt', 'desc'), limit(10));
-    const recentSnap = await getDocs(recentQ);
-    const recentLogs: FoodLog[] = recentSnap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<FoodLog, 'id'>) }));
+    let recentLogs: FoodLog[] = [];
+    try {
+      const recentQ = query(collection(db, 'foodLogs'), where('childId', '==', childId), orderBy('createdAt', 'desc'), limit(10));
+      const recentSnap = await getDocs(recentQ);
+      recentLogs = recentSnap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<FoodLog, 'id'>) }));
+    } catch (e) {
+      console.warn('[loadChild] recent foodLogs read failed:', e);
+    }
 
     set({ child, mealPlan, todayLogs, recentLogs, loading: false });
   },

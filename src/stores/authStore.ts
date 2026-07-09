@@ -66,9 +66,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   initAuthListener: () => {
     return subscribeAuthState(async (user) => {
       if (user) {
-        const userDoc = await getUserDoc(user.uid);
-        set({ user, userDoc, currentChildId: userDoc?.currentChildId ?? null, initializing: false });
-        await get().loadChildrenForCurrentUser();
+        try {
+          const userDoc = await getUserDoc(user.uid);
+          set({ user, userDoc, currentChildId: userDoc?.currentChildId ?? null, initializing: false });
+          await get().loadChildrenForCurrentUser();
+        } catch (e) {
+          // Never let a startup read error crash the app — sign in still succeeds.
+          console.warn('[initAuthListener] load failed after sign-in:', e);
+          set({ user, userDoc: null, currentChildId: null, initializing: false });
+        }
       } else {
         set({ user: null, userDoc: null, currentChildId: null, children: [], initializing: false });
       }
@@ -104,10 +110,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   loadChildrenForCurrentUser: async () => {
     const { user } = get();
     if (!user) return;
-    const q = query(collection(db, 'children'), where('parentId', '==', user.uid));
-    const snap = await getDocs(q);
-    const children: ChildDoc[] = snap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<ChildDoc, 'id'>) }));
-    set({ children });
+    try {
+      const q = query(collection(db, 'children'), where('parentId', '==', user.uid));
+      const snap = await getDocs(q);
+      const children: ChildDoc[] = snap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<ChildDoc, 'id'>) }));
+      set({ children });
+    } catch (e) {
+      console.warn('[loadChildrenForCurrentUser] failed:', e);
+      set({ children: [] });
+    }
   },
 
   addChild: async (name, age, avatarEmoji, safeFoods, allergens) => {
