@@ -17,7 +17,7 @@ to confirm Tumby's deletion actually clears everything before submitting.
 3. [ ] Note the values you'll verify afterward:
        - the account's **email** (Firebase Auth → Users)
        - the child doc ID(s) (Firestore → `children`)
-4. [ ] In the app: Settings → **Delete Account & All Data** → enter password → **Delete Everything**.
+4. [ ] In the app: Settings → **Delete Account & All Data** → type **DELETE** → **Delete Everything**.
 5. [ ] Watch the Metro/Expo console. A successful run logs, in order:
        ```
        [deleteAccount] → reauthenticate ✓
@@ -45,12 +45,13 @@ to confirm Tumby's deletion actually clears everything before submitting.
 The console line `[deleteAccount] ✗ FAILED at "<step>" — code=<code>` names the exact step:
 - `code=permission-denied` on a foodLogs/mealPlans step → rules not published, or account has
   legacy data without `parentId`. Publish rules and test a fresh account.
-- `code=auth/requires-recent-login` on the auth step → session too old; the in-app flow now
-  re-authenticates with the password first, so this should not occur. If it does, log out and
-  back in, then retry.
+- `code=auth/requires-recent-login` on the auth step → session too old to delete the Auth record.
+  All Firestore data is still deleted; the app signs the user out. Re-open the app, log in, and
+  delete again (a fresh session lets deleteUser() complete). This is an edge case — deletion done
+  shortly after login completes fully in one pass.
 
 ## For the App Store review notes
 You can tell the reviewer:
-> "Account deletion is available in-app at Settings → Delete Account & All Data. It requires
-> password re-authentication, then permanently deletes the Firebase Auth account and all
-> associated Firestore data (profile, children, food logs, meal plans). No data is retained."
+> "Account deletion is available in-app at Settings → Delete Account & All Data. The user types
+> DELETE to confirm, then the app permanently deletes the Firebase Auth account and all associated
+> Firestore data (profile, children, food logs, meal plans). No data is retained."

@@ -31,7 +31,7 @@ export default function SettingsScreen() {
   const [newChildAllergens, setNewChildAllergens] = useState<string[]>([]);
   const [remindersEnabled, setRemindersEnabled] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -105,22 +105,18 @@ export default function SettingsScreen() {
   const handleDeleteAccount = () => setDeleteModalOpen(true);
 
   const confirmDeleteAccount = async () => {
-    if (!deletePassword) return;
+    if (deleteConfirmText.trim().toLowerCase() !== 'delete') return;
     setDeleting(true);
     try {
-      await deleteAccount(deletePassword);
+      await deleteAccount();
       setDeleteModalOpen(false);
-      setDeletePassword('');
+      setDeleteConfirmText('');
       router.replace('/(auth)/welcome');
     } catch (e: any) {
       const code = e?.code ?? '';
       let msg = e?.message ?? 'Please try again.';
-      if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
-        msg = 'That password is incorrect. Please try again.';
-      } else if (code === 'auth/too-many-requests') {
-        msg = 'Too many attempts. Please wait a moment and try again.';
-      } else if (code === 'permission-denied') {
-        msg = `Permission error while deleting your data (${e?.step ?? 'unknown step'}). Your Firestore rules may need republishing. Details logged to console.`;
+      if (code === 'permission-denied') {
+        msg = `Permission error while deleting your data (${e?.step ?? 'unknown step'}). Your Firestore rules may need republishing. Details are in the console log.`;
       }
       Alert.alert('Could not delete account', msg, [{ text: 'OK' }]);
     } finally {
@@ -323,7 +319,7 @@ export default function SettingsScreen() {
         visible={deleteModalOpen}
         animationType="fade"
         transparent
-        onRequestClose={() => { if (!deleting) { setDeleteModalOpen(false); setDeletePassword(''); } }}
+        onRequestClose={() => { if (!deleting) { setDeleteModalOpen(false); setDeleteConfirmText(''); } }}
       >
         <View style={s.modalOverlay}>
           <View style={s.deleteModal}>
@@ -331,20 +327,20 @@ export default function SettingsScreen() {
             <Text style={s.deleteModalBody}>
               This permanently deletes your account, every child profile, and all food logs and meal plans. This cannot be undone.
             </Text>
-            <Text style={s.deleteModalLabel}>Enter your password to confirm</Text>
+            <Text style={s.deleteModalLabel}>Type DELETE to confirm</Text>
             <TextInput
               style={s.deleteModalInput}
-              placeholder="Your password"
+              placeholder="delete"
               placeholderTextColor={COLORS.text3}
-              value={deletePassword}
-              onChangeText={setDeletePassword}
-              secureTextEntry
+              value={deleteConfirmText}
+              onChangeText={setDeleteConfirmText}
               autoCapitalize="none"
+              autoCorrect={false}
             />
             <TouchableOpacity
-              style={[s.deleteModalConfirm, (!deletePassword || deleting) && { opacity: 0.5 }]}
+              style={[s.deleteModalConfirm, (deleteConfirmText.trim().toLowerCase() !== 'delete' || deleting) && { opacity: 0.5 }]}
               onPress={confirmDeleteAccount}
-              disabled={!deletePassword || deleting}
+              disabled={deleteConfirmText.trim().toLowerCase() !== 'delete' || deleting}
             >
               {deleting
                 ? <ActivityIndicator color={COLORS.white} />
@@ -352,7 +348,7 @@ export default function SettingsScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               style={s.deleteModalCancel}
-              onPress={() => { setDeleteModalOpen(false); setDeletePassword(''); }}
+              onPress={() => { setDeleteModalOpen(false); setDeleteConfirmText(''); }}
               disabled={deleting}
             >
               <Text style={s.deleteModalCancelText}>Cancel</Text>

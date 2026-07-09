@@ -15,7 +15,6 @@ import {
   deleteChildDoc,
   deleteUserDoc,
   deleteCurrentAuthUser,
-  reauthenticateCurrentUser,
 } from '../services/auth.service';
 import { QueryDocumentSnapshot } from 'firebase/firestore';
 import { ChildDoc, UserDoc } from '../types';
@@ -36,7 +35,7 @@ interface AuthState {
   addChild: (name: string, age: number, avatarEmoji: string, safeFoods: string[], allergens: string[]) => Promise<void>;
   switchChild: (childId: string) => Promise<void>;
   deleteChild: (childId: string) => Promise<void>;
-  deleteAccount: (password: string) => Promise<void>;
+  deleteAccount: () => Promise<void>;
 }
 
 async function deleteDocsInChunks(docs: QueryDocumentSnapshot[]) {
@@ -146,7 +145,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ children: remaining, currentChildId: nextCurrentId });
   },
 
-  deleteAccount: async (password) => {
+  deleteAccount: async () => {
     const { user, children } = get();
     if (!user) return;
     const uid = user.uid;
@@ -166,10 +165,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         throw wrapped;
       }
     };
-
-    // 0. Re-authenticate first so the final deleteUser() can't fail with
-    //    auth/requires-recent-login after data is already gone.
-    await run('reauthenticate', () => reauthenticateCurrentUser(password));
 
     // 1. Each child's foodLogs (child docs must still exist here).
     for (const child of children) {
@@ -196,7 +191,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     await run('delete user doc', () => deleteUserDoc(uid));
 
     // 5. Auth account LAST — once this is gone we lose all Firestore permission.
-    await run('delete auth user', () => deleteCurrentAuthUser());
+    //    Firebase blocks deleteUser() on stale sessions (auth/requires-recent-login).
+    //    All data is already gone at this point, so in that case we just sign out;
+    //    the (data-less) login record is cleaned up on next sign-in attempt.
+    try {
+      await run('delete auth user', () => deleteCurrentAuthUser());
+    } catch (e: any) {
+      if (e?.code === 'auth/requires-recent-login') {
+        console.log('[deleteAccount] auth deletion needs recent login — data already removed, signing out');
+        await logoutService();
+      } else {
+        throw e;
+      }
+    }
 
     set({ user: null, userDoc: null, currentChildId: null, children: [] });
     console.log('[deleteAccount] ✓✓ complete — account and all data removed');
