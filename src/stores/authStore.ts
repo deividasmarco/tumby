@@ -75,12 +75,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (user) {
         try {
           const userDoc = await getUserDoc(user.uid);
-          set({ user, userDoc, currentChildId: userDoc?.currentChildId ?? null, initializing: false });
+          set({ user, userDoc, currentChildId: userDoc?.currentChildId ?? null });
           await get().loadChildrenForCurrentUser();
         } catch (e) {
           // Never let a startup read error crash the app — sign in still succeeds.
           console.warn('[initAuthListener] load failed after sign-in:', e);
-          set({ user, userDoc: null, currentChildId: null, initializing: false });
+          set({ user, userDoc: null, currentChildId: null, children: [] });
+        } finally {
+          // Flip initializing AFTER children are loaded so routing decisions
+          // (has a child → app, no child → onboarding) have full information.
+          set({ initializing: false });
         }
       } else {
         set({ user: null, userDoc: null, currentChildId: null, children: [], initializing: false });

@@ -16,11 +16,21 @@ export default function RootLayout() {
         router.replace('/(auth)/welcome');
         return;
       }
-      if (state.currentChildId && loadedChildId.current !== state.currentChildId) {
-        loadedChildId.current = state.currentChildId;
-        useChildStore.getState().loadChild(state.currentChildId).then(() => {
-          router.replace('/(tabs)/today');
-        });
+      // Signed in: prefer the saved active child, else fall back to the first
+      // child the user has.
+      const childId = state.currentChildId ?? state.children[0]?.id ?? null;
+      if (childId) {
+        if (loadedChildId.current !== childId) {
+          loadedChildId.current = childId;
+          useChildStore.getState().loadChild(childId).then(() => {
+            router.replace('/(tabs)/today');
+          });
+        }
+      } else {
+        // Signed in but no child yet (e.g. a social sign-in that didn't finish
+        // onboarding) — send them to create their first child.
+        loadedChildId.current = null;
+        router.replace('/(auth)/onboarding' as any);
       }
     };
 
