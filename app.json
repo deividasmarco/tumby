@@ -19,8 +19,14 @@
             "CFBundleURLSchemes": [
               "com.googleusercontent.apps.513060506294-m6nph1v5qbejje13vpp7q9dt3f5dimr8"
             ]
+          },
+          {
+            "CFBundleURLSchemes": [
+              "com.googleusercontent.apps.513060506294-m6nph1v5qbejje13vpp7q9dt3f5dimr8"
+            ]
           }
-        ]
+        ],
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -44,7 +50,11 @@
     },
     "extra": {
       "privacyPolicyUrl": "https://TODO-your-domain.com/tumby/privacy-policy",
-      "termsUrl": "https://TODO-your-domain.com/tumby/terms"
+      "termsUrl": "https://TODO-your-domain.com/tumby/terms",
+      "router": {},
+      "eas": {
+        "projectId": "ac7750b1-3e51-44d6-bba6-ff67ff4c88fc"
+      }
     }
   }
 }

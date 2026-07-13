@@ -31,7 +31,17 @@ export default function SocialAuthButtons({ onSignedIn }: Props) {
 
   useEffect(() => {
     if (Platform.OS === 'ios') {
-      AppleAuthentication.isAvailableAsync().then(setAppleAvailable).catch(() => setAppleAvailable(false));
+      AppleAuthentication.isAvailableAsync()
+        .then((available) => {
+          console.log('[SocialAuth] Apple sign-in available:', available);
+          setAppleAvailable(available);
+        })
+        .catch((e) => {
+          // Usually means the native module/entitlement isn't in this build —
+          // rebuild with `eas build --profile development --platform ios`.
+          console.warn('[SocialAuth] Apple isAvailableAsync failed (native module missing — rebuild needed):', e);
+          setAppleAvailable(false);
+        });
     }
   }, []);
 
