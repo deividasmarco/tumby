@@ -152,16 +152,21 @@ export default function SocialAuthButtons({ onSignedIn }: Props) {
 }
 
 const s = StyleSheet.create({
-  wrap: { marginTop: 8 },
+  // Full width + self-contained so it renders identically whether the parent
+  // stretches (login) or centers (welcome) its children.
+  wrap: { width: '100%', marginTop: 8 },
   dividerRow: { flexDirection: 'row', alignItems: 'center', marginVertical: 16 },
   divider: { flex: 1, height: 1, backgroundColor: COLORS.border },
   dividerText: { marginHorizontal: 12, fontSize: 12, fontWeight: '700', color: COLORS.text3 },
+  // Google and Apple share the same footprint (height/width/radius) for equal
+  // prominence per Apple Guideline 4.8.
   googleBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
+    width: '100%', height: 52,
     backgroundColor: COLORS.white, borderWidth: 1.5, borderColor: COLORS.border,
-    borderRadius: RADIUS.lg, padding: 15, marginBottom: 12,
+    borderRadius: RADIUS.lg, marginBottom: 12,
   },
   googleBtnText: { fontSize: 15, fontWeight: '800', color: COLORS.text },
-  appleBtn: { height: 50, width: '100%' },
+  appleBtn: { height: 52, width: '100%' },
   error: { color: COLORS.red, fontSize: 13, fontWeight: '700', marginTop: 12, textAlign: 'center' },
 });
