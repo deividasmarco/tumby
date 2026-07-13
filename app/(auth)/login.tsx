@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, SafeAreaView, Acti
 import { router } from 'expo-router';
 import { COLORS, RADIUS, SHADOW } from '../../src/constants/colors';
 import { useAuthStore } from '../../src/stores/authStore';
+import SocialAuthButtons from '../../src/components/SocialAuthButtons';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -58,6 +59,8 @@ export default function LoginScreen() {
         <TouchableOpacity style={s.btnPrimary} onPress={submit} disabled={loading}>
           {loading ? <ActivityIndicator color={COLORS.white} /> : <Text style={s.btnText}>Log In</Text>}
         </TouchableOpacity>
+
+        <SocialAuthButtons onSignedIn={(hasChild) => router.replace((hasChild ? '/(tabs)/today' : '/(auth)/onboarding') as any)} />
 
         <TouchableOpacity style={s.forgotLink} onPress={forgotPassword}>
           <Text style={s.forgotLinkText}>Forgot password?</Text>

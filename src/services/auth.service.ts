@@ -5,6 +5,11 @@ import {
   sendPasswordResetEmail,
   onAuthStateChanged,
   deleteUser,
+  signInWithCredential,
+  reauthenticateWithCredential,
+  GoogleAuthProvider,
+  OAuthProvider,
+  AuthCredential,
   User,
 } from '@firebase/auth';
 import {
@@ -49,6 +54,66 @@ export async function createUserDoc(uid: string, email: string): Promise<void> {
 export async function getUserDoc(uid: string): Promise<UserDoc | null> {
   const snap = await getDoc(doc(db, 'users', uid));
   return snap.exists() ? (snap.data() as UserDoc) : null;
+}
+
+// Creates users/{uid} if missing, or fills in missing fields — never overwrites
+// existing values (e.g. keeps currentChildId, keeps a name captured on Apple's
+// first sign-in even though later sign-ins omit it). Safe to call after any
+// sign-in path (email, Google, Apple).
+export async function ensureUserDoc(
+  uid: string,
+  fields: { email?: string | null; displayName?: string | null; provider?: string }
+): Promise<void> {
+  const ref = doc(db, 'users', uid);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) {
+    await setDoc(ref, {
+      email: fields.email ?? null,
+      displayName: fields.displayName ?? null,
+      provider: fields.provider ?? 'password',
+      createdAt: Date.now(),
+      currentChildId: null,
+    });
+    return;
+  }
+  const existing = snap.data() as UserDoc;
+  const patch: Record<string, unknown> = {};
+  if (!existing.email && fields.email) patch.email = fields.email;
+  if (!existing.displayName && fields.displayName) patch.displayName = fields.displayName;
+  if (!existing.provider && fields.provider) patch.provider = fields.provider;
+  if (Object.keys(patch).length > 0) {
+    await setDoc(ref, patch, { merge: true });
+  }
+}
+
+export async function signInWithGoogleIdToken(idToken: string): Promise<User> {
+  const credential = GoogleAuthProvider.credential(idToken);
+  const cred = await signInWithCredential(auth, credential);
+  return cred.user;
+}
+
+export async function signInWithAppleCredential(identityToken: string, rawNonce: string): Promise<User> {
+  const provider = new OAuthProvider('apple.com');
+  const credential = provider.credential({ idToken: identityToken, rawNonce });
+  const cred = await signInWithCredential(auth, credential);
+  return cred.user;
+}
+
+// Re-authenticate with a freshly-obtained provider credential. Used by the
+// account-deletion flow when Firebase reports auth/requires-recent-login for a
+// Google/Apple user (they can't re-enter a password).
+export async function reauthenticateWithProviderCredential(credential: AuthCredential): Promise<void> {
+  const user = auth.currentUser;
+  if (!user) throw new Error('No signed-in user to re-authenticate.');
+  await reauthenticateWithCredential(user, credential);
+}
+
+export function googleCredentialFromIdToken(idToken: string): AuthCredential {
+  return GoogleAuthProvider.credential(idToken);
+}
+
+export function appleCredentialFromToken(identityToken: string, rawNonce: string): AuthCredential {
+  return new OAuthProvider('apple.com').credential({ idToken: identityToken, rawNonce });
 }
 
 export async function setCurrentChildId(uid: string, childId: string): Promise<void> {

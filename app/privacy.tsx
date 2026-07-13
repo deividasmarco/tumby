@@ -13,7 +13,7 @@ const SECTIONS = [
   },
   {
     heading: '2. Information we collect',
-    body: 'Account: Email address and password, used to create and sign in to your account. Your password is handled entirely by Google Firebase Authentication — we never see or store it in plain text.\n\nChild profile (provided by you): Child\'s first name or nickname, age, avatar emoji, and any food allergies you choose to flag (optional). We recommend using a nickname rather than a full legal name.\n\nApp usage: Foods added to meal slots, reactions logged (refused/licked/bit/ate/loved), dates, daily streak count, buddy XP and level progress, recipes you save.\n\nWhat we do NOT collect: Location, camera, microphone, photos, contacts, advertising identifiers, analytics, or crash data of any kind.',
+    body: 'Account: Email address, used to create and sign in to your account. You can sign in with an email and password, with Google, or with Apple. Passwords and the Google/Apple sign-in exchange are handled entirely by Google Firebase Authentication — we never see or store your password. If you use Sign in with Apple, you may choose to hide your email, in which case Apple provides a private relay address.\n\nChild profile (provided by you): Child\'s first name or nickname, age, avatar emoji, and any food allergies you choose to flag (optional). We recommend using a nickname rather than a full legal name.\n\nApp usage: Foods added to meal slots, reactions logged (refused/licked/bit/ate/loved), dates, daily streak count, buddy XP and level progress, recipes you save.\n\nWhat we do NOT collect: Location, camera, microphone, photos, contacts, advertising identifiers, analytics, or crash data of any kind.',
   },
   {
     heading: '3. How your data is stored',

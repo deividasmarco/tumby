@@ -10,11 +10,14 @@ import {
   resetPassword as resetPasswordService,
   createUserDoc,
   getUserDoc,
+  ensureUserDoc,
   setCurrentChildId as setCurrentChildIdService,
   createChildDoc,
   deleteChildDoc,
   deleteUserDoc,
   deleteCurrentAuthUser,
+  signInWithGoogleIdToken,
+  signInWithAppleCredential,
 } from '../services/auth.service';
 import { QueryDocumentSnapshot } from 'firebase/firestore';
 import { ChildDoc, UserDoc } from '../types';
@@ -29,6 +32,10 @@ interface AuthState {
   initAuthListener: () => () => void;
   register: (email: string, password: string, childName: string, age: number, avatarEmoji: string, safeFoods: string[], allergens: string[]) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
+  // Social sign-in. Returns true if the signed-in user already has at least one
+  // child (→ go to app), false if they're new and need onboarding.
+  signInWithGoogle: (idToken: string) => Promise<boolean>;
+  signInWithApple: (identityToken: string, rawNonce: string, fullName: string | null) => Promise<boolean>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   loadChildrenForCurrentUser: () => Promise<void>;
@@ -96,6 +103,29 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const userDoc = await getUserDoc(user.uid);
     set({ user, userDoc, currentChildId: userDoc?.currentChildId ?? null });
     await get().loadChildrenForCurrentUser();
+  },
+
+  signInWithGoogle: async (idToken) => {
+    const user = await signInWithGoogleIdToken(idToken);
+    await ensureUserDoc(user.uid, { email: user.email, displayName: user.displayName, provider: 'google.com' });
+    const userDoc = await getUserDoc(user.uid);
+    set({ user, userDoc, currentChildId: userDoc?.currentChildId ?? null });
+    await get().loadChildrenForCurrentUser();
+    return get().children.length > 0;
+  },
+
+  signInWithApple: async (identityToken, rawNonce, fullName) => {
+    const user = await signInWithAppleCredential(identityToken, rawNonce);
+    // Apple returns the name only on the FIRST sign-in — capture it now.
+    await ensureUserDoc(user.uid, {
+      email: user.email,
+      displayName: fullName || user.displayName,
+      provider: 'apple.com',
+    });
+    const userDoc = await getUserDoc(user.uid);
+    set({ user, userDoc, currentChildId: userDoc?.currentChildId ?? null });
+    await get().loadChildrenForCurrentUser();
+    return get().children.length > 0;
   },
 
   logout: async () => {

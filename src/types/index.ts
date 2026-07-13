@@ -35,6 +35,8 @@ export interface UserDoc {
   email: string;
   createdAt: number;
   currentChildId: string | null;
+  displayName?: string | null;
+  provider?: string;
 }
 
 export interface ChildDoc {
