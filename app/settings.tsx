@@ -10,19 +10,6 @@ import { MEDICAL_DISCLAIMER } from '../src/legal/disclaimer';
 import { SUPPORT_EMAIL } from '../src/legal/contact';
 import { useAuthStore } from '../src/stores/authStore';
 import { useChildStore } from '../src/stores/childStore';
-import * as AppleAuthentication from 'expo-apple-authentication';
-import * as Crypto from 'expo-crypto';
-import * as Google from 'expo-auth-session/providers/google';
-import * as WebBrowser from 'expo-web-browser';
-import { auth } from '../src/services/firebase';
-import {
-  reauthenticateWithProviderCredential,
-  googleCredentialFromIdToken,
-  appleCredentialFromToken,
-} from '../src/services/auth.service';
-import { GOOGLE_WEB_CLIENT_ID, GOOGLE_IOS_CLIENT_ID, GOOGLE_ANDROID_CLIENT_ID } from '../src/config/auth';
-
-WebBrowser.maybeCompleteAuthSession();
 
 const AGES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const AVATARS = ['🐯', '🦊', '🐸', '🐼', '🦁', '🐨'];
@@ -46,14 +33,6 @@ export default function SettingsScreen() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [deleting, setDeleting] = useState(false);
-
-  // Google re-auth request (used only if a Google user needs a fresh session
-  // to delete their account).
-  const [, , googlePromptAsync] = Google.useIdTokenAuthRequest({
-    iosClientId: GOOGLE_IOS_CLIENT_ID,
-    androidClientId: GOOGLE_ANDROID_CLIENT_ID,
-    webClientId: GOOGLE_WEB_CLIENT_ID,
-  });
 
   useEffect(() => {
     AsyncStorage.getItem('tumby_reminders').then(v => { if (v === 'true') setRemindersEnabled(true); });
@@ -125,56 +104,17 @@ export default function SettingsScreen() {
 
   const handleDeleteAccount = () => setDeleteModalOpen(true);
 
-  // Re-authenticate an Apple user by re-running Sign in with Apple.
-  const reauthApple = async () => {
-    const rawNonce = Crypto.randomUUID();
-    const hashedNonce = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, rawNonce);
-    const cred = await AppleAuthentication.signInAsync({
-      requestedScopes: [
-        AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-        AppleAuthentication.AppleAuthenticationScope.EMAIL,
-      ],
-      nonce: hashedNonce,
-    });
-    if (!cred.identityToken) throw new Error('No Apple identity token.');
-    await reauthenticateWithProviderCredential(appleCredentialFromToken(cred.identityToken, rawNonce));
-  };
-
-  // Re-authenticate a Google user by re-running the Google OAuth flow.
-  const reauthGoogle = async () => {
-    const res = await googlePromptAsync();
-    if (res?.type !== 'success' || !res.params?.id_token) {
-      const err: any = new Error('cancelled');
-      err.code = 'cancelled';
-      throw err;
-    }
-    await reauthenticateWithProviderCredential(googleCredentialFromIdToken(res.params.id_token));
-  };
-
   const confirmDeleteAccount = async () => {
     if (deleteConfirmText.trim().toLowerCase() !== 'delete') return;
     setDeleting(true);
     try {
-      // Re-authenticate social users up-front so deleteUser() can't fail with
-      // auth/requires-recent-login on a stale session (which would leave an
-      // orphaned login record). If they cancel, nothing is deleted.
-      const providerId = auth.currentUser?.providerData?.[0]?.providerId;
-      if (providerId === 'apple.com') await reauthApple();
-      else if (providerId === 'google.com') await reauthGoogle();
-
+      // Server-side deletion (Cloud Function) — no re-login required.
       await deleteAccount();
       setDeleteModalOpen(false);
       setDeleteConfirmText('');
       router.replace('/(auth)/welcome');
     } catch (e: any) {
-      const code = e?.code ?? '';
-      if (code === 'ERR_REQUEST_CANCELED' || code === 'cancelled') {
-        Alert.alert('Deletion cancelled', 'You need to confirm your identity to delete your account. Nothing was deleted.');
-      } else if (code === 'permission-denied') {
-        Alert.alert('Could not delete account', `Permission error while deleting your data (${e?.step ?? 'unknown step'}). Details are in the console log.`);
-      } else {
-        Alert.alert('Could not delete account', e?.message ?? 'Please try again.', [{ text: 'OK' }]);
-      }
+      Alert.alert('Could not delete account', e?.message ?? 'Please try again.', [{ text: 'OK' }]);
     } finally {
       setDeleting(false);
     }

@@ -14,8 +14,7 @@ import {
   setCurrentChildId as setCurrentChildIdService,
   createChildDoc,
   deleteChildDoc,
-  deleteUserDoc,
-  deleteCurrentAuthUser,
+  callDeleteAccount,
   signInWithGoogleIdToken,
   signInWithAppleCredential,
 } from '../services/auth.service';
@@ -191,65 +190,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   deleteAccount: async () => {
-    const { user, children } = get();
+    const { user } = get();
     if (!user) return;
-    const uid = user.uid;
-
-    // Wrap every step so we log exactly which operation fails and its error code.
-    const run = async <T,>(step: string, fn: () => Promise<T>): Promise<T> => {
-      try {
-        console.log(`[deleteAccount] → ${step}`);
-        const result = await fn();
-        console.log(`[deleteAccount] ✓ ${step}`);
-        return result;
-      } catch (e: any) {
-        console.error(`[deleteAccount] ✗ FAILED at "${step}" — code=${e?.code ?? 'n/a'} message=${e?.message ?? e}`);
-        const wrapped = new Error(`Failed at: ${step}${e?.code ? ` (${e.code})` : ''}`);
-        (wrapped as any).step = step;
-        (wrapped as any).code = e?.code;
-        throw wrapped;
-      }
-    };
-
-    // 1. Each child's foodLogs (child docs must still exist here).
-    for (const child of children) {
-      await run(`delete foodLogs for child ${child.id}`, async () => {
-        const n = await deleteCollectionForChild('foodLogs', child.id);
-        console.log(`[deleteAccount]   removed ${n} foodLogs`);
-      });
-    }
-
-    // 2. Each child's mealPlans.
-    for (const child of children) {
-      await run(`delete mealPlans for child ${child.id}`, async () => {
-        const n = await deleteCollectionForChild('mealPlans', child.id);
-        console.log(`[deleteAccount]   removed ${n} mealPlans`);
-      });
-    }
-
-    // 3. Child docs.
-    for (const child of children) {
-      await run(`delete child doc ${child.id}`, () => deleteChildDoc(child.id));
-    }
-
-    // 4. User doc.
-    await run('delete user doc', () => deleteUserDoc(uid));
-
-    // 5. Auth account LAST — once this is gone we lose all Firestore permission.
-    //    Firebase blocks deleteUser() on stale sessions (auth/requires-recent-login).
-    //    All data is already gone at this point, so in that case we just sign out;
-    //    the (data-less) login record is cleaned up on next sign-in attempt.
+    // The Cloud Function deletes all Firestore data AND the auth record with
+    // Admin privileges — no client-side re-authentication required.
+    console.log('[deleteAccount] → calling deleteAccount Cloud Function');
+    await callDeleteAccount();
+    console.log('[deleteAccount] ✓ server deletion complete');
+    // Clear the (now-deleted) local session.
     try {
-      await run('delete auth user', () => deleteCurrentAuthUser());
-    } catch (e: any) {
-      if (e?.code === 'auth/requires-recent-login') {
-        console.log('[deleteAccount] auth deletion needs recent login — data already removed, signing out');
-        await logoutService();
-      } else {
-        throw e;
-      }
+      await logoutService();
+    } catch {
+      // The auth record is already gone server-side; ignore local sign-out errors.
     }
-
     set({ user: null, userDoc: null, currentChildId: null, children: [] });
     console.log('[deleteAccount] ✓✓ complete — account and all data removed');
   },

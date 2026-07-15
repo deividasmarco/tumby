@@ -21,8 +21,17 @@ import {
   collection,
   addDoc,
 } from 'firebase/firestore';
-import { auth, db } from './firebase';
+import { httpsCallable } from 'firebase/functions';
+import { auth, db, functions } from './firebase';
 import { ChildDoc, UserDoc } from '../types';
+
+// Calls the server-side deleteAccount Cloud Function, which deletes all of the
+// user's Firestore data AND their auth record with Admin privileges — no
+// re-authentication needed on the client.
+export async function callDeleteAccount(): Promise<void> {
+  const fn = httpsCallable(functions, 'deleteAccount');
+  await fn();
+}
 
 export function subscribeAuthState(callback: (user: User | null) => void) {
   return onAuthStateChanged(auth, callback);
