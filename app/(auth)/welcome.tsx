@@ -4,10 +4,6 @@ import { COLORS, RADIUS, SHADOW } from '../../src/constants/colors';
 import SocialAuthButtons from '../../src/components/SocialAuthButtons';
 
 export default function WelcomeScreen() {
-  const handleSignedIn = (hasChild: boolean) => {
-    router.replace((hasChild ? '/(tabs)/today' : '/(auth)/onboarding') as any);
-  };
-
   return (
     <SafeAreaView style={s.container}>
       <View style={s.content}>
@@ -21,7 +17,7 @@ export default function WelcomeScreen() {
           <Text style={s.btnText}>Get Started</Text>
         </TouchableOpacity>
 
-        <SocialAuthButtons onSignedIn={handleSignedIn} />
+        <SocialAuthButtons />
 
         <TouchableOpacity style={s.loginLink} onPress={() => router.push('/(auth)/login')}>
           <Text style={s.loginLinkText}>Already have an account? <Text style={{ fontWeight: '800', color: COLORS.orange }}>Log in</Text></Text>

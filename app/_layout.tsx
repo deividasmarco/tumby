@@ -5,15 +5,25 @@ import { useChildStore } from '../src/stores/childStore';
 
 export default function RootLayout() {
   const loadedChildId = useRef<string | null>(null);
+  const lastRoute = useRef<string | null>(null);
 
   useEffect(() => {
     const unsubscribeAuth = useAuthStore.getState().initAuthListener();
+
+    // Navigate only when the target actually changes, so repeated auth-state
+    // updates (user set, then children loaded) don't re-mount the same screen
+    // and flash it multiple times.
+    const go = (path: string) => {
+      if (lastRoute.current === path) return;
+      lastRoute.current = path;
+      router.replace(path as any);
+    };
 
     const handleState = (state: ReturnType<typeof useAuthStore.getState>) => {
       if (state.initializing) return;
       if (!state.user) {
         loadedChildId.current = null;
-        router.replace('/(auth)/welcome');
+        go('/(auth)/welcome');
         return;
       }
       // Signed in: prefer the saved active child, else fall back to the first
@@ -23,14 +33,14 @@ export default function RootLayout() {
         if (loadedChildId.current !== childId) {
           loadedChildId.current = childId;
           useChildStore.getState().loadChild(childId).then(() => {
-            router.replace('/(tabs)/today');
+            go('/(tabs)/today');
           });
         }
       } else {
         // Signed in but no child yet (e.g. a social sign-in that didn't finish
         // onboarding) — send them to create their first child.
         loadedChildId.current = null;
-        router.replace('/(auth)/onboarding' as any);
+        go('/(auth)/onboarding');
       }
     };
 

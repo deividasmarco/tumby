@@ -60,7 +60,7 @@ export default function LoginScreen() {
           {loading ? <ActivityIndicator color={COLORS.white} /> : <Text style={s.btnText}>Log In</Text>}
         </TouchableOpacity>
 
-        <SocialAuthButtons onSignedIn={(hasChild) => router.replace((hasChild ? '/(tabs)/today' : '/(auth)/onboarding') as any)} />
+        <SocialAuthButtons />
 
         <TouchableOpacity style={s.forgotLink} onPress={forgotPassword}>
           <Text style={s.forgotLinkText}>Forgot password?</Text>

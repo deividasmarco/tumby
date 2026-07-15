@@ -13,10 +13,9 @@ import { useAuthStore } from '../stores/authStore';
 
 WebBrowser.maybeCompleteAuthSession();
 
-// hasChild=true → returning user (go to app); false → new user (onboarding)
-type Props = { onSignedIn: (hasChild: boolean) => void };
-
-export default function SocialAuthButtons({ onSignedIn }: Props) {
+// Routing after sign-in is handled centrally in app/_layout.tsx (based on auth
+// state), so this component only performs the sign-in.
+export default function SocialAuthButtons() {
   const signInWithGoogle = useAuthStore(s => s.signInWithGoogle);
   const signInWithApple = useAuthStore(s => s.signInWithApple);
   const [busy, setBusy] = useState<null | 'google' | 'apple'>(null);
@@ -51,7 +50,6 @@ export default function SocialAuthButtons({ onSignedIn }: Props) {
       if (idToken) {
         setBusy('google');
         signInWithGoogle(idToken)
-          .then(onSignedIn)
           .catch((e: any) => setError(e?.message ?? 'Google sign-in failed.'))
           .finally(() => setBusy(null));
       }
@@ -99,8 +97,7 @@ export default function SocialAuthButtons({ onSignedIn }: Props) {
         ? `${credential.fullName.givenName ?? ''} ${credential.fullName.familyName ?? ''}`.trim() || null
         : null;
 
-      const hasChild = await signInWithApple(credential.identityToken, rawNonce, fullName);
-      onSignedIn(hasChild);
+      await signInWithApple(credential.identityToken, rawNonce, fullName);
     } catch (e: any) {
       if (e?.code === 'ERR_REQUEST_CANCELED') {
         // user cancelled — no error message needed
