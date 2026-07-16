@@ -20,7 +20,9 @@ export default function RootLayout() {
     };
 
     const handleState = (state: ReturnType<typeof useAuthStore.getState>) => {
-      if (state.initializing) return;
+      // Wait until startup finishes and any in-progress registration completes,
+      // so we never route on a half-provisioned account.
+      if (state.initializing || state.provisioning) return;
       if (!state.user) {
         loadedChildId.current = null;
         go('/(auth)/welcome');

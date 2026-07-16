@@ -10,6 +10,7 @@ import { MEDICAL_DISCLAIMER } from '../src/legal/disclaimer';
 import { SUPPORT_EMAIL } from '../src/legal/contact';
 import { useAuthStore } from '../src/stores/authStore';
 import { useChildStore } from '../src/stores/childStore';
+import { requestNotificationPermission, scheduleDailyReminder, cancelReminders } from '../src/services/notifications';
 
 const AGES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const AVATARS = ['🐯', '🦊', '🐸', '🐼', '🦁', '🐨'];
@@ -39,10 +40,24 @@ export default function SettingsScreen() {
   }, []);
 
   const toggleReminders = async (value: boolean) => {
+    if (value) {
+      const granted = await requestNotificationPermission();
+      if (!granted) {
+        setRemindersEnabled(false);
+        await AsyncStorage.setItem('tumby_reminders', 'false');
+        Alert.alert(
+          'Notifications are off',
+          'To get daily reminders, enable notifications for Tumby in your device Settings.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+      await scheduleDailyReminder();
+    } else {
+      await cancelReminders();
+    }
     setRemindersEnabled(value);
     await AsyncStorage.setItem('tumby_reminders', value ? 'true' : 'false');
-    // Note: actual push notification scheduling requires expo-notifications
-    // and a native EAS build. This stores the preference for when that is added.
   };
 
   const toggleFood = (id: string) =>
@@ -265,7 +280,7 @@ export default function SettingsScreen() {
           </View>
           {remindersEnabled && (
             <Text style={s.reminderNote}>
-              ℹ️ Notifications will activate once the full app version is installed.
+              🔔 We'll send one gentle reminder each day around 5 PM.
             </Text>
           )}
         </View>

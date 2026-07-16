@@ -27,6 +27,9 @@ interface AuthState {
   currentChildId: string | null;
   children: ChildDoc[];
   initializing: boolean;
+  // True while an email registration is creating the user + first child, so the
+  // router doesn't react to the intermediate "user with no child" state.
+  provisioning: boolean;
 
   initAuthListener: () => () => void;
   register: (email: string, password: string, childName: string, age: number, avatarEmoji: string, safeFoods: string[], allergens: string[]) => Promise<void>;
@@ -68,6 +71,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   currentChildId: null,
   children: [],
   initializing: true,
+  provisioning: false,
 
   initAuthListener: () => {
     return subscribeAuthState(async (user) => {
@@ -92,13 +96,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   register: async (email, password, childName, age, avatarEmoji, safeFoods, allergens) => {
-    const user = await registerWithEmail(email, password);
-    await createUserDoc(user.uid, email);
-    const childId = await createChildDoc(user.uid, childName, age, avatarEmoji, safeFoods, allergens);
-    await setCurrentChildIdService(user.uid, childId);
-    const userDoc = await getUserDoc(user.uid);
-    set({ user, userDoc, currentChildId: childId });
-    await get().loadChildrenForCurrentUser();
+    // Guard routing while the user + first child are being created, so the
+    // router doesn't briefly send us to onboarding on the intermediate state.
+    set({ provisioning: true });
+    try {
+      const user = await registerWithEmail(email, password);
+      await createUserDoc(user.uid, email);
+      const childId = await createChildDoc(user.uid, childName, age, avatarEmoji, safeFoods, allergens);
+      await setCurrentChildIdService(user.uid, childId);
+      const userDoc = await getUserDoc(user.uid);
+      set({ user, userDoc, currentChildId: childId });
+      await get().loadChildrenForCurrentUser();
+    } finally {
+      // Flipping this false triggers the router to route once, with full state.
+      set({ provisioning: false });
+    }
   },
 
   login: async (email, password) => {
