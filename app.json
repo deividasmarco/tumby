@@ -19,11 +19,6 @@
             "CFBundleURLSchemes": [
               "com.googleusercontent.apps.513060506294-m6nph1v5qbejje13vpp7q9dt3f5dimr8"
             ]
-          },
-          {
-            "CFBundleURLSchemes": [
-              "com.googleusercontent.apps.513060506294-m6nph1v5qbejje13vpp7q9dt3f5dimr8"
-            ]
           }
         ],
         "ITSAppUsesNonExemptEncryption": false
@@ -43,15 +38,14 @@
     "plugins": [
       "expo-router",
       "expo-web-browser",
-      "expo-apple-authentication",
-      "expo-notifications"
+      "expo-apple-authentication"
     ],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
-      "privacyPolicyUrl": "https://TODO-your-domain.com/tumby/privacy-policy",
-      "termsUrl": "https://TODO-your-domain.com/tumby/terms",
+     "privacyPolicyUrl": "https://tumbyapp.com/privacy.php",
+"termsUrl": "https://tumbyapp.com/terms.php",
       "router": {},
       "eas": {
         "projectId": "ac7750b1-3e51-44d6-bba6-ff67ff4c88fc"
